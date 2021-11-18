@@ -220,9 +220,9 @@ function sqlCmd()
 # process arguements to bypass the menu
 if [ "$1" = "start" ]; then
     echo "Starting container..."
-    startMssql
-    [ "elif 
-$1" = "stop" ]; then
+    startMssql 
+    elif
+    [ "$1" = "stop" ]; then
         echo "Stopping container..."
         stopMssql
     elif 
