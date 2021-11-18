@@ -159,7 +159,7 @@ function startMssql() # start or restart the container named MSSQL_DB_Container
         countDown
     else
         echo "No MSSQL docker image found, provisioning..."
-        docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Am@zon2021!' -e 'MSSQL_PID=Express' --name MSSQL_DB_Container --network="bridge" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest-ubuntu 
+        docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=P@55VV0rd!' -e 'MSSQL_PID=Express' --name MSSQL_DB_Container --network="bridge" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest-ubuntu 
         export runningAs=$(docker ps --no-trunc --format "table {{.ID}}\t {{.Names}}\t" | grep -i MSSQL_DB_Container  | awk '{print $2}' )
         echo "MSSQL is running as: "$runningAs
         echo "Please be patient as it takes time for the container to start..."
@@ -214,15 +214,15 @@ function sqlCmd()
 {
     checkDocker
     export mssqlImage=$(docker ps --no-trunc --format "table {{.ID}}\t {{.Names}}\t" | grep -i MSSQL_DB_Container  | awk '{print $1}' )
-    docker exec -it $mssqlImage /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Am@zon2021!
+    docker exec -it $mssqlImage /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P P@55VV0rd!
 }
 
 # process arguements to bypass the menu
 if [ "$1" = "start" ]; then
     echo "Starting container..."
     startMssql
-elif 
-    [ "$1" = "stop" ]; then
+    [ "elif 
+$1" = "stop" ]; then
         echo "Stopping container..."
         stopMssql
     elif 
