@@ -62,6 +62,13 @@ function startUp()
     
 }
 
+function helpMe()
+{
+    echo "Help wanted..."
+    sleep 5
+    startUp
+}
+
 function doNothing()
 {
     echo "################################################"
@@ -210,6 +217,31 @@ function sqlCmd()
     docker exec -it $mssqlImage /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Am@zon2021!
 }
 
+# process arguements to bypass the menu
+if [ "$1" = "start" ]; then
+    echo "Starting container..."
+    startMssql
+elif 
+    [ "$1" = "stop" ]; then
+        echo "Stopping container..."
+        stopMssql
+    elif 
+        [ "$1" = "bash" ]; then
+            echo "Attempting bash acess..."
+            bashAccess
+    elif 
+        [ "$1" = "sql" ]; then
+        echo "Attempting sqlcmd access..."
+        sqlCmd
+    elif
+        [ "$1" = "help" ]; then
+            echo "Providing help..."
+            helpMe
+    elif [ -z "$1" ]; then
+        echo "No args...proceed with menu"
+        #sleep 3
+        startUp
+fi
 
 
 
