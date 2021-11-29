@@ -209,10 +209,17 @@ function rootAccess()
     docker exec -it -u 0 $mssqlImage /bin/bash
 }
 
+function showDatabases()
+{
+    checkDocker
+    export mssqlImage=$(docker ps --no-trunc --format "table {{.ID}}\t {{.Names}}\t" | grep -i MSSQL_DB_Container  | awk '{print $1}' )
+    docker exec $mssqlImage /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P P@55VV0rd! -Q "SELECT name, database_id, create_date FROM sys.databases;"
+}
 
 function sqlCmd()
 {
     checkDocker
+    showDatabases
     export mssqlImage=$(docker ps --no-trunc --format "table {{.ID}}\t {{.Names}}\t" | grep -i MSSQL_DB_Container  | awk '{print $1}' )
     docker exec -it $mssqlImage /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P P@55VV0rd!
 }
@@ -267,6 +274,9 @@ case $whatwhat in
         ;;
     7)
         copyFile
+        ;;
+    8)
+        rootAccess
         ;;
     *) 
         badChoice
