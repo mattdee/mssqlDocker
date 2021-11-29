@@ -213,6 +213,7 @@ function showDatabases()
 {
     checkDocker
     export mssqlImage=$(docker ps --no-trunc --format "table {{.ID}}\t {{.Names}}\t" | grep -i MSSQL_DB_Container  | awk '{print $1}' )
+    echo "Databases available in: "$mssqlImage
     docker exec $mssqlImage /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P P@55VV0rd! -Q "SELECT name, database_id, create_date FROM sys.databases;"
 }
 
