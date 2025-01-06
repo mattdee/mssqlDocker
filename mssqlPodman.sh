@@ -75,7 +75,7 @@ function checkPodman()
 
 function createNetwork()
 {
-    podman network exists docknet || podman network create docknet
+    podman network exists podmannet || podman network create -d brigde podmannet
 }
 
 function startMssql()
@@ -93,8 +93,8 @@ function startMssql()
         podman restart MSSQL_DB_Container
     else
         echo "Provisioning a new MSSQL container..."
-        podman run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=P@55VV0rd!' -e 'MSSQL_PID=Express' \
-            --name MSSQL_DB_Container --network="docknet" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+        podman run --platform linux/amd64 -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=P@55VV0rd!' -e 'MSSQL_PID=Express' \
+            --name MSSQL_DB_Container --network="podmannet" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest-ubuntu
         echo "MSSQL container started successfully."
     fi
 }
