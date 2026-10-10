@@ -1,58 +1,95 @@
 # mssqlDocker
 
-Utility scripts for running Microsoft SQL Server in local containers.
+Manage a local Microsoft SQL Server container with one Bash script that works with Docker or Podman.
 
-This repo now includes the original Docker and Podman scripts plus a newer combined manager that can use either container engine.
+## Repository Contents
 
-## Files
-
-| File | Purpose |
+| File | Description |
 | --- | --- |
-| `sqlServerContainer.sh` | Current recommended script. Supports Docker or Podman, CLI commands, and an interactive menu. |
-| `mssqlDocker.sh` | Original Docker-only SQL Server container script. |
-| `mssqlPodman.sh` | Original Podman-only SQL Server container script. |
+| `sqlServerContainer.sh` | SQL Server container manager with CLI commands and an interactive menu. |
 | `LICENSE` | Project license. |
 
-## Recommended Script
+## What The Script Does
 
-Use `sqlServerContainer.sh` for new work:
+`sqlServerContainer.sh` can:
+
+- Start, stop, restart, and remove a SQL Server container
+- Use Docker or Podman
+- Auto-detect a working container engine
+- Create a container network
+- Create a named volume for SQL Server data
+- Pull the configured SQL Server image
+- Show container status, logs, and port mappings
+- Open bash or root shell access inside the container
+- Open an interactive `sqlcmd` session
+- Run a quick `SELECT @@VERSION` test query
+- Copy files into or out of the container
+
+## Requirements
+
+- Bash
+- Docker or Podman
+- Internet access to pull the SQL Server container image
+- Enough local memory and disk for SQL Server
+
+## Quick Start
+
+Make the script executable:
+
+```bash
+chmod +x sqlServerContainer.sh
+```
+
+Start SQL Server:
 
 ```bash
 ./sqlServerContainer.sh start
 ```
 
-Run it without arguments to open the interactive menu:
+Run a connection test:
 
 ```bash
-./sqlServerContainer.sh
+./sqlServerContainer.sh test
 ```
 
-## Commands
+Open `sqlcmd`:
+
+```bash
+./sqlServerContainer.sh sql
+```
+
+## CLI Commands
 
 ```bash
 ./sqlServerContainer.sh pull       # Pull the configured SQL Server image
 ./sqlServerContainer.sh start      # Start or restart the SQL Server container
 ./sqlServerContainer.sh stop       # Stop the running container
 ./sqlServerContainer.sh restart    # Restart the container
-./sqlServerContainer.sh status     # Show container status and port mappings
-./sqlServerContainer.sh logs       # Show SQL Server container logs
+./sqlServerContainer.sh remove     # Remove the container
+./sqlServerContainer.sh status     # Show container status, ports, and engine
+./sqlServerContainer.sh logs       # Show container logs
+./sqlServerContainer.sh bash       # Open bash in the container
+./sqlServerContainer.sh root       # Open a root shell in the container
 ./sqlServerContainer.sh sql        # Open an interactive sqlcmd session
 ./sqlServerContainer.sh test       # Run SELECT @@VERSION
-./sqlServerContainer.sh bash       # Open bash inside the container
-./sqlServerContainer.sh root       # Open a root shell inside the container
-./sqlServerContainer.sh remove     # Remove the SQL Server container
 ./sqlServerContainer.sh help       # Show help
 ```
 
-## Docker or Podman
+Run without arguments to use the interactive menu:
 
-The combined script defaults to:
+```bash
+./sqlServerContainer.sh
+```
+
+## Docker Or Podman
+
+The script defaults to auto-detection:
 
 ```bash
 CONTAINER_ENGINE=auto
 ```
 
-In auto mode, the script prefers Docker when Docker is installed and running. If Docker is not available, it falls back to Podman.
+In `auto` mode, the script uses Docker when Docker is installed and running. If Docker is not available, it uses Podman.
 
 Force Docker:
 
@@ -66,9 +103,9 @@ Force Podman:
 CONTAINER_ENGINE=podman ./sqlServerContainer.sh start
 ```
 
-## Default Configuration
+## Configuration
 
-`sqlServerContainer.sh` can be configured with environment variables. Defaults are shown below:
+You can override these defaults with environment variables:
 
 ```bash
 CONTAINER_ENGINE=auto
@@ -82,74 +119,81 @@ SQLSERVER_IMAGE=mcr.microsoft.com/mssql/server:2022-latest
 CONTAINER_PORT_MAP='-p 1433:1433'
 ```
 
-Example override:
+Examples:
 
 ```bash
 SQLSERVER_SA_PASS='YourStrongPassword1!' ./sqlServerContainer.sh start
-```
-
-Use a different image:
-
-```bash
-SQLSERVER_IMAGE='mcr.microsoft.com/mssql/server:2022-latest' ./sqlServerContainer.sh start
-```
-
-Use a different host port:
-
-```bash
 CONTAINER_PORT_MAP='-p 11433:1433' ./sqlServerContainer.sh start
+SQLSERVER_CONTAINER=SQLServer_Dev ./sqlServerContainer.sh start
 ```
 
-## SQL Server Image Notes
+## SQL Server Image
 
-The recommended default image is:
+The default image is:
 
 ```text
 mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-The SQL Server 2025 RHEL image can fail on some hosts with:
+To use another image:
+
+```bash
+SQLSERVER_IMAGE='mcr.microsoft.com/mssql/server:2022-latest' ./sqlServerContainer.sh start
+```
+
+The SQL Server 2025 RHEL image may fail on hosts that do not expose x86-64-v3 CPU features:
 
 ```text
 Fatal glibc error: CPU does not support x86-64-v3
 ```
 
-If your machine supports that image, you can try it with:
+If your host supports that image, try:
 
 ```bash
 SQLSERVER_IMAGE='mcr.microsoft.com/mssql/rhel/server:2025-latest' ./sqlServerContainer.sh start
 ```
 
-## Connecting
+## Data Persistence
 
-Open `sqlcmd` inside the container:
+The script creates a named volume and mounts it at SQL Server's data directory:
 
-```bash
-./sqlServerContainer.sh sql
+```text
+sqlserver_data:/var/opt/mssql
 ```
 
-Run a quick connection test:
+Change the volume name with:
 
 ```bash
-./sqlServerContainer.sh test
+SQLSERVER_VOLUME=my_sqlserver_data ./sqlServerContainer.sh start
 ```
 
-The combined script checks for both common `sqlcmd` locations:
+## sqlcmd Notes
+
+The script checks for both common `sqlcmd` paths inside the container:
 
 ```text
 /opt/mssql-tools18/bin/sqlcmd
 /opt/mssql-tools/bin/sqlcmd
 ```
 
-When using `mssql-tools18`, the script adds `-C` for local certificate trust.
+When it uses `mssql-tools18`, it adds `-C` to trust the local development certificate.
 
-## Legacy Scripts
+## Troubleshooting
 
-The legacy scripts remain available:
+Show container status:
 
 ```bash
-./mssqlDocker.sh
-./mssqlPodman.sh
+./sqlServerContainer.sh status
 ```
 
-Use these if you specifically want the older Docker-only or Podman-only flow. For most use cases, prefer `sqlServerContainer.sh`.
+Show SQL Server logs:
+
+```bash
+./sqlServerContainer.sh logs
+```
+
+If port `1433` is already in use, map another host port:
+
+```bash
+CONTAINER_PORT_MAP='-p 11433:1433' ./sqlServerContainer.sh start
+```
